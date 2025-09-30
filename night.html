@@ -71,16 +71,31 @@
         }
 
         /* Notes Section */
+        .note-entry {
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
         .note-entry p {
             font-size: 1.2rem;
             line-height: 1.6;
-            max-width: 600px;
+        }
+        .note-entry img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-top: 1rem;
         }
 
         /* Playlist Section */
         .playlist-container {
-            width: 80%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 800px;
+        }
+        .playlist-container iframe {
+            width: 100%;
+            height: 450px;
+            border: none;
+            border-radius: 12px;
         }
 
         /* Anonymous Wall Section */
@@ -148,15 +163,19 @@
         <section id="notes" class="page">
             <h2>Notes</h2>
             <div class="note-entry">
-                <p>Here, the silence screams louder than words.</p>
                 <p>A fleeting thought caught in the amber of midnight.</p>
-                </div>
+                <img src="https://i.imgur.com/m2S0B2j.jpeg" alt="A dark, moody alleyway">
+            </div>
+
+            <div class="note-entry">
+                <p>Here, the silence screams louder than words.</p>
+            </div>
         </section>
 
         <section id="playlists" class="page">
-<h2>Playlists</h2>
+            <h2>Playlists</h2>
             <div class="playlist-container">
-                <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                <iframe src="https://www.youtube.com/embed/videoseries?list=PL_X_2k1ANx0XW_gS2wAIw2U7j1Bh3-a5L" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
             </div>
         </section>
 
@@ -176,7 +195,6 @@
         // --- JAVASCRIPT LOGIC ---
 
         // IMPORTANT: Replace this placeholder with your actual Firebase config
-        // from the Firebase console to make the Anonymous Wall work.
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_AUTH_DOMAIN",
@@ -192,7 +210,6 @@
             const db = firebase.firestore();
             const messagesCollection = db.collection('messages');
             
-            // Form submission logic
             const messageForm = document.getElementById('message-form');
             if(messageForm) {
                 messageForm.addEventListener('submit', (e) => {
@@ -204,7 +221,7 @@
                         text: messageInput.value,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     }).then(() => {
-                        messageInput.value = ''; // Clear the form
+                        messageInput.value = '';
                     }).catch(error => {
                         console.error("Error adding document: ", error);
                         alert("Could not submit message. Is your Firebase config correct?");
@@ -212,11 +229,10 @@
                 });
             }
             
-            // Load and display messages
             const messagesContainer = document.getElementById('messages-container');
             if(messagesContainer) {
                 messagesCollection.orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-                    messagesContainer.innerHTML = ''; // Clear old messages
+                    messagesContainer.innerHTML = '';
                     if (snapshot.empty) {
                         const noMessages = document.createElement('div');
                         noMessages.className = 'message';
@@ -238,10 +254,8 @@
             }
 
         } catch (e) {
-            console.
-error("Firebase initialization failed. Have you added your config details?", e);
+            console.error("Firebase initialization failed. Have you added your config details?", e);
         }
-
 
         // Navigation Logic
         document.addEventListener('DOMContentLoaded', () => {
