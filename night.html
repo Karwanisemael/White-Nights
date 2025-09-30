@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadows - Test</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --background-color: #121212;
+            --text-color: #b3b3b3;
+            --primary-color: #282828;
+            --highlight-color: #ffffff;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Garamond', 'Times New Roman', serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav {
+            padding: 1rem;
+            background-color: #181818;
+        }
+
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--highlight-color);
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        .page {
+            display: none; /* Hide all pages by default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+        }
+
+        .page.active {
+            display: flex; /* Show only the active page */
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-style: italic;
+            font-weight: lighter;
+        }
+
+        h2 {
+            color: var(--highlight-color);
+            margin-bottom: 2rem;
+        }
+
+        /* Notes Section */
+        .note-entry p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            max-width: 600px;
+        }
+
+        /* Playlist Section */
+        .playlist-container {
+            width: 80%;
+            max-width: 600px;
+        }
+
+        /* Anonymous Wall Section */
+        #message-form {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        textarea {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 1rem;
+            min-height: 100px;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--highlight-color);
+            border: 1px solid #333;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        #messages-container {
+            margin-top: 2rem;
+            width: 80%;
+            max-width: 500px;
+            text-align: left;
+        }
+
+        .message {
+            background-color: var(--primary-color);
+            border-left: 3px solid var(--text-color);
+            padding: 15px;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#notes" class="nav-link">Notes</a>
+        <a href="#playlists" class="nav-link">Playlists</a>
+        <a href="#wall" class="nav-link">Anonymous Wall</a>
+    </nav>
+
+    <main>
+        <section id="home" class="page active">
+            <h1>Some things are better written in shadows.</h1>
+        </section>
+
+        <section id="notes" class="page">
+            <h2>Notes</h2>
+            <div class="note-entry">
+                <p>Here, the silence screams louder than words.</p>
+                <p>A fleeting thought caught in the amber of midnight.</p>
+                </div>
+        </section>
+
+        <section id="playlists" class="page">
+<h2>Playlists</h2>
+            <div class="playlist-container">
+                <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+            </div>
+        </section>
+
+        <section id="wall" class="page">
+            <h2>Anonymous Wall</h2>
+            <form id="message-form">
+                <textarea id="message-input" placeholder="Leave a message in the shadows..." required></textarea>
+                <button type="submit">Submit</button>
+            </form>
+            <div id="messages-container">
+                <div class="message">This is a test message. The form will not work until you connect to the database.</div>
+            </div>
+        </section>
+    </main>
+    
+    <script>
+        // --- JAVASCRIPT LOGIC ---
+
+        // IMPORTANT: Replace this placeholder with your actual Firebase config
+        // from the Firebase console to make the Anonymous Wall work.
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            const messagesCollection = db.collection('messages');
+            
+            // Form submission logic
+            const messageForm = document.getElementById('message-form');
+            if(messageForm) {
+                messageForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const messageInput = document.getElementById('message-input');
+                    if (messageInput.value.trim() === '') return;
+
+                    messagesCollection.add({
+                        text: messageInput.value,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        messageInput.value = ''; // Clear the form
+                    }).catch(error => {
+                        console.error("Error adding document: ", error);
+                        alert("Could not submit message. Is your Firebase config correct?");
+                    });
+                });
+            }
+            
+            // Load and display messages
+            const messagesContainer = document.getElementById('messages-container');
+            if(messagesContainer) {
+                messagesCollection.orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+                    messagesContainer.innerHTML = ''; // Clear old messages
+                    if (snapshot.empty) {
+                        const noMessages = document.createElement('div');
+                        noMessages.className = 'message';
+                        noMessages.textContent = 'The wall is silent. Be the first to leave a mark.';
+                        messagesContainer.appendChild(noMessages);
+                    } else {
+                        snapshot.forEach(doc => {
+                            const message = doc.data();
+                            const messageElement = document.createElement('div');
+                            messageElement.className = 'message';
+                            messageElement.textContent = message.text;
+                            messagesContainer.appendChild(messageElement);
+                        });
+                    }
+                }, error => {
+                    console.error("Error fetching messages: ", error);
+                    messagesContainer.innerHTML = '<div class="message">Could not load messages. Check console for errors.</div>';
+                });
+            }
+
+        } catch (e) {
+            console.
+error("Firebase initialization failed. Have you added your config details?", e);
+        }
+
+
+        // Navigation Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const pages = document.querySelectorAll('.page');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            function showPage(pageId) {
+                pages.forEach(page => page.classList.remove('active'));
+                const pageToShow = document.querySelector(pageId);
+                if (pageToShow) pageToShow.classList.add('active');
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    showPage(targetId);
+                });
+            });
+
+            showPage('#home');
+        });
+    </script>
+</body>
+</html>
